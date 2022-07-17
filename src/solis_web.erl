@@ -63,7 +63,6 @@
 %% External functions
 %% ====================================================================
 appl_start([])->
-    
     application:start(?MODULE).
 
 %% ====================================================================
@@ -126,6 +125,9 @@ check_time(Status)->
 init([]) ->
     
     web_init:start(),
+    [{K3_node,_}]=sd:get_host(k3_node,net_adm:localhost()),
+    rpc:cast(K3_node,nodelog,log,[notice,?MODULE_STRING,?LINE,
+				 {"INFO, server started ",?MODULE}]),
     {ok, #state{
 	    clock="Ok there you go!",
 	    temp_indoor=undefined_temp,
@@ -143,8 +145,9 @@ init([]) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_call({websocket_init,WebSocketPid},_From,State) ->
-    [{NodeLog,_}]=sd:get(nodelog),
-    rpc:cast(NodeLog,nodelog,log,[notice,?MODULE_STRING,?LINE,
+    
+    [{K3_node,_}]=sd:get_host(k3_node,net_adm:localhost()),
+    rpc:cast(K3_node,nodelog,log,[notice,?MODULE_STRING,?LINE,
 				 {"DEBUG,new session started ",WebSocketPid}]),
     {Reply,NewState}=format_text(init,State#state{web_socket_pid=WebSocketPid}),
     spawn(fun()->do_check_time(?IntervalReadSolis,"temp_undef","lamps_undef","tv_undef") end),
@@ -238,7 +241,8 @@ code_change(_OldVsn, State, _Extra) ->
 
 do_check_time(N,Temp,Lamps,Tv)->
     timer:sleep(?CheckIntervall),
-    [{NodeLog,_}]=sd:get(nodelog),  
+    [{K3_node,_}]=sd:get_host(k3_node,net_adm:localhost()),
+   
     {H,M,S}=time(),
     Clock=integer_to_list(H)++":"++integer_to_list(M)++":"++integer_to_list(S),
     if 
@@ -246,13 +250,13 @@ do_check_time(N,Temp,Lamps,Tv)->
 	    NewN=?IntervalReadSolis,
 	    case sd:get(solis) of
 		[]->
-		    rpc:cast(NodeLog,nodelog,log,[warning,?MODULE_STRING,?LINE,
+		    rpc:cast(K3_node,nodelog,log,[warning,?MODULE_STRING,?LINE,
 						 {"Error,no solis nodes are available "}]),
 		    NewTemp=Temp,
 		    NewLamps=Lamps,
 		    NewTv=Tv;
 		[{SolisNode,_}|_]->
-		    rpc:cast(NodeLog,nodelog,log,[notice,?MODULE_STRING,?LINE,
+		    rpc:cast(K3_node,nodelog,log,[notice,?MODULE_STRING,?LINE,
 						 {"DEBUG,SolisNode available",SolisNode}]),
 		    NewTemp=rpc:call(SolisNode,solis,temp,["indoor"],2000),
 		    case rpc:call(SolisNode,lamps,are_on,[],2000) of
@@ -279,7 +283,7 @@ do_check_time(N,Temp,Lamps,Tv)->
 	    NewLamps=Lamps,
 	    NewTv=Tv
     end,
-    rpc:cast(NodeLog,nodelog,log,[notice,?MODULE_STRING,?LINE,
+    rpc:cast(K3_node,nodelog,log,[notice,?MODULE_STRING,?LINE,
 						 {"DEBUG,Infromation",NewN,Clock,NewTemp,NewLamps,NewTv}]),
     rpc:cast(node(),?MODULE,check_time,[{NewN,Clock,NewTemp,NewLamps,NewTv}]).
 
