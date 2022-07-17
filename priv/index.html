@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8"/>
+	<title>Websocket client</title>
+</head>
+
+<body>
+
+  <h1 >Solis hälsar välkommen</h1>
+  <p> Klockan är:</p>
+    <div id="clock"></div>
+
+  <p> temperaturen inomhus är:</p>
+  <div id="temp_indoor"></div>
+  <p> lamporna inomhus är:</p>
+  <div id="switch_lamps"></div>
+  <p> Tv är:</p>
+  <div id="switch_tv"></div>
+
+<br>
+
+<script>
+  /*   var ws = new WebSocket("ws://joqhome.asuscomm.com:60201/please_upgrade_to_websocket"); */
+   var ws = new WebSocket("ws://localhost:6809/please_upgrade_to_websocket"); 
+    ws.onerror = function(event) {
+        console.error("[ME]WebSocket error observed:", event);
+    };
+    ws.onclose = function(event) {
+        console.log("[ME]WebSocket is closed now.");
+    };
+
+
+  ws.onmessage = function (event) {
+      
+      console.log(event.data);
+      var str=event.data;
+      var arr=str.split(",");
+      
+      document.getElementById('clock').innerHTML=arr[0];
+      document.getElementById('temp_indoor').innerHTML=arr[1];
+      document.getElementById('switch_lamps').innerHTML=arr[2];
+      document.getElementById('switch_tv').innerHTML=arr[3];
+  
+  };
+
+// Joqs own golden code
+
+  function lamp_inglasad_on(){
+				ws.send("lamp_inglasad_on");
+};
+  function lamp_inglasad_off(){
+				ws.send("lamp_inglasad_off");
+};
+  function lamps_indoor_on(){
+				ws.send("lamps_indoor_on");
+};
+  function lamps_indoor_off(){
+				ws.send("lamps_indoor_off");
+};
+   </script>
+
+
+</html>

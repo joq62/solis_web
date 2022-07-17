@@ -1,0 +1,11 @@
+{application,solis_web,
+             [{description,"An OTP application"},
+              {vsn,"0.1.0"},
+              {registered,[]},
+              {mod,{solis_web_app,[]}},
+              {applications,[kernel,stdlib]},
+              {env,[]},
+              {modules,[no_matching_route_handler,solis_web,solis_web_app,
+                        solis_web_handler,solis_web_sup,web_init]},
+              {licenses,["Apache 2.0"]},
+              {links,[]}]}.
