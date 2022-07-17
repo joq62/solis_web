@@ -21,6 +21,8 @@ start()->
     io:format("Cwd :~p~n",[Cwd]),
     
     code:add_patha("priv"),
+    PrivDir=code:where_is_file("priv"),
+    code:add_patha(PrivDir),
     PathToFile=code:where_is_file("index.html"),
     io:format("PathToFile :~p~n",[PathToFile]),
     FullPath=filename:join(Cwd,PathToFile),
