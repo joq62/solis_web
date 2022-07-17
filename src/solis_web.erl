@@ -115,6 +115,7 @@ check_time(Status)->
 %%          {stop, Reason}
 %% --------------------------------------------------------------------
 init([]) ->
+    code:add_patha("priv"),
     web_init:start(),
     
     {ok, #state{
