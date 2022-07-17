@@ -26,9 +26,13 @@
 	 wanted_temp/1,
 	 temp/1,
 	 door/1,
-	 motion/1,
-	 ping/0
+	 motion/1
 	]).
+
+
+
+
+
 
 -export([
 	 websocket_init/1,
@@ -37,6 +41,9 @@
 	]).
 
 -export([
+	 appl_start/1,
+	 ping/0,
+
 	 start/0,
 	 stop/0
 	]).
@@ -55,7 +62,8 @@
 %% ====================================================================
 %% External functions
 %% ====================================================================
-
+appl_start([])->
+    application:start(?MODULE).
 
 %% ====================================================================
 %% Server functions
