@@ -232,6 +232,8 @@ code_change(_OldVsn, State, _Extra) ->
 %% --------------------------------------------------------------------
 
 -define(TestNode,'solis_test@c100').
+
+
 do_check_time(N,Temp,Lamps,Tv)->
     timer:sleep(?CheckIntervall),
     
@@ -240,31 +242,38 @@ do_check_time(N,Temp,Lamps,Tv)->
     if 
 	N==0->
 	    NewN=?IntervalReadSolis,
-	    NewTemp=rpc:call(?TestNode,solis,temp,["indoor"],2000),
-	    case rpc:call(?TestNode,lamps,are_on,[],2000) of
-		{badrpc,_}->
-		    NewLamps=Lamps;
-		false->
-		    NewLamps="OFF";
-		true->
-		    NewLamps="ON"
-	    end,
-	    case rpc:call(?TestNode,tv,is_on,[],2000) of
-		{badrpc,_}->
+	    case sd:get(solis) of
+		[]->
+		    NewTemp=Temp,
+		    NewLamps=Lamps,
 		    NewTv=Tv;
-		false->
-		    NewTv="OFF";
-		true->
-		    NewTv="ON"
-	    end,
-	    io:format("read solis ~n");
+		[{SolisNode,_}|_]->
+		    NewTemp=rpc:call(SolisNode,solis,temp,["indoor"],2000),
+		    case rpc:call(SolisNode,lamps,are_on,[],2000) of
+			{badrpc,_}->
+			    NewLamps=Lamps;
+			false->
+			    NewLamps="OFF";
+			true->
+			    NewLamps="ON"
+		    end,
+		    case rpc:call(SolisNode,tv,is_on,[],2000) of
+			{badrpc,_}->
+			    NewTv=Tv;
+			false->
+			    NewTv="OFF";
+			true->
+			    NewTv="ON"
+		    end
+	    end;
+	   % io:format("read solis ~n");
 	true->
 	    NewN=N-1,
 	    NewTemp=Temp,
 	    NewLamps=Lamps,
 	    NewTv=Tv
-	 end,
-	    
+    end,
+    
     rpc:cast(node(),?MODULE,check_time,[{NewN,Clock,NewTemp,NewLamps,NewTv}]).
 
 
