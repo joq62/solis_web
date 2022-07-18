@@ -258,9 +258,20 @@ do_check_time(N,Temp,Lamps,Tv)->
 		[{SolisNode,_}|_]->
 		    rpc:cast(K3_node,nodelog,log,[notice,?MODULE_STRING,?LINE,
 						 {"DEBUG,SolisNode available",SolisNode}]),
-		    NewTemp=rpc:call(SolisNode,solis,temp,["indoor"],2000),
+		    
+		    case rpc:call(SolisNode,solis,temp,["indoor"],2000) of
+			{badrpc,Reason}->
+			    rpc:cast(K3_node,nodelog,log,[warning,?MODULE_STRING,?LINE,
+							  {"ERROR,badrpc",badrpc,Reason}]),
+			    NewTemp=Temp;
+			Temp1->
+			    NewTemp=Temp1
+		    end,
+		    
 		    case rpc:call(SolisNode,lamps,are_on,[],2000) of
-			{badrpc,_}->
+			{badrpc,Reason1}->
+			    rpc:cast(K3_node,nodelog,log,[warning,?MODULE_STRING,?LINE,
+							  {"ERROR,badrpc",badrpc,Reason1}]),
 			    NewLamps=Lamps;
 			false->
 			    NewLamps="OFF";
@@ -268,7 +279,9 @@ do_check_time(N,Temp,Lamps,Tv)->
 			    NewLamps="ON"
 		    end,
 		    case rpc:call(SolisNode,tv,is_on,[],2000) of
-			{badrpc,_}->
+			{badrpc,Reason2}->
+			    rpc:cast(K3_node,nodelog,log,[warning,?MODULE_STRING,?LINE,
+							  {"ERROR,badrpc",badrpc,Reason2}]),
 			    NewTv=Tv;
 			false->
 			    NewTv="OFF";
