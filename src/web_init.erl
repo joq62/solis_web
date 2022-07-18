@@ -5,7 +5,7 @@
 
 -module(web_init).
 
--define(Port,6809). % Change also Port and Path in index.htlm"
+-define(Port,60202). % Change also Port and Path in index.htlm"
 -define(Handler,solis_web_handler).
 -define(NoRouteHandler,no_matching_route_handler).
 
